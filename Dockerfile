@@ -1,4 +1,4 @@
-FROM finalduty/archlinux
+FROM finalduty/archlinux:latest
 
 MAINTAINER Mamut3D
 
@@ -9,10 +9,14 @@ RUN pacman -Syu --noconfirm &&\
   npm \
   vim \
   git && \
-  cd /root && \
-  git clone https://github.com/dudoslav/guocci-web-ui.git && \
-  cd guocci-web-ui && \ 
-  npm install && \
-  echo "Yeah!" 
+  useradd -m guocci  
 
-CMD ["/bin/bash"]
+RUN cd /home/guocci && \
+  su guocci -c 'git clone https://github.com/dudoslav/guocci-web-ui.git && \
+  cd /home/guocci/guocci-web-ui  && \ 
+  npm install --silent' 
+
+RUN sed -ie 's/guocci-mock-server.herokuapp.com/localhost:3001/g' /home/guocci/guocci-web-ui/app/app.request.options.ts
+
+USER guocci
+CMD bin/bash -c 'cd /home/guocci/guocci-web-ui && npm run start'
